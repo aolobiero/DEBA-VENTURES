@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Admin workspace | Deba Ventures Ltd</title>
+  <script>
+    document.documentElement.hidden = true;
+  </script>
+  <script src="config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    :root {
+      --admin-bg: #f5f7fa; --admin-card: #fff; --admin-text: #10233d; --admin-muted: #52657a;
+      --admin-border: #d8e0e8; --admin-accent: #c5a052; --admin-navy: #0f2c59;
+    }
+    body[data-theme="dark"] { --admin-bg: #081426; --admin-card: #10233d; --admin-text: #f3f7fc; --admin-muted: #c6d3e2; --admin-border: #315070; --admin-accent: #e0bd70; --admin-navy: #f3f7fc; }
+    body.admin-page { background:var(--admin-bg); color:var(--admin-text); min-height:100vh; }
+    .admin-page [hidden] { display:none !important; }
+    .admin-shell { margin:auto; max-width:1440px; padding:2rem clamp(1rem,4vw,4rem) 4rem; }
+    .admin-topbar,.admin-toolbar,.admin-panel-header,.admin-item-header { align-items:center; display:flex; gap:1rem; justify-content:space-between; }
+    .admin-topbar { margin-bottom:2rem; }
+    .admin-title { color:var(--admin-text); font-family:Manrope,sans-serif; font-size:clamp(2rem,4vw,3.8rem); letter-spacing:-.06em; line-height:1; }
+    .admin-subtitle,.admin-meta { color:var(--admin-muted); }
+    .admin-actions { display:flex; flex-wrap:wrap; gap:.6rem; }
+    .admin-button { border:1px solid var(--admin-border); border-radius:.6rem; cursor:pointer; padding:.7rem 1rem; }
+    .admin-button-primary { background:var(--admin-accent); border-color:var(--admin-accent); color:#071d3c; font-weight:700; }
+    .admin-button-muted { background:var(--admin-card); color:var(--admin-text); }
+    .admin-layout { display:grid; gap:1rem; grid-template-columns:minmax(0,1.3fr) minmax(18rem,.7fr); }
+    .admin-panel { background:var(--admin-card); border:1px solid var(--admin-border); border-radius:1rem; overflow:hidden; }
+    .admin-panel-header { border-bottom:1px solid var(--admin-border); padding:1.2rem 1.4rem; }
+    .admin-panel-header h2 { color:var(--admin-text); font-family:Manrope,sans-serif; font-size:1.15rem; }
+    .admin-eyebrow { color:var(--admin-accent); font-size:.7rem; font-weight:800; letter-spacing:.15em; text-transform:uppercase; }
+    .admin-timeline { display:grid; gap:1rem; max-height:58vh; min-height:18rem; overflow:auto; padding:1.4rem; }
+    .admin-message { border-left:3px solid var(--admin-border); padding-left:1rem; }
+    .admin-message.system { border-left-color:var(--admin-accent); }
+    .admin-message.admin { border-left-color:var(--admin-navy); }
+    .admin-message-meta { color:var(--admin-muted); display:flex; font-size:.72rem; gap:.8rem; margin-bottom:.3rem; text-transform:uppercase; }
+    .admin-message-meta strong { color:var(--admin-text); letter-spacing:.12em; }
+    .admin-message p { color:var(--admin-muted); white-space:pre-wrap; }
+    .request-card { border:1px solid var(--admin-border); border-radius:.8rem; padding:1rem; scroll-margin-top:1rem; }
+    .request-card.is-selected { border-color:var(--admin-accent); box-shadow:0 0 0 2px color-mix(in srgb, var(--admin-accent) 25%, transparent); }
+    .request-card-header { align-items:start; display:flex; gap:1rem; justify-content:space-between; }
+    .request-card h3 { color:var(--admin-text); font-family:Manrope,sans-serif; font-size:1rem; }
+    .request-fields { display:grid; gap:.45rem; grid-template-columns:repeat(2,minmax(0,1fr)); margin:1rem 0; }
+    .request-field { color:var(--admin-muted); font-size:.8rem; }
+    .request-field strong { color:var(--admin-text); display:block; font-size:.68rem; letter-spacing:.08em; text-transform:uppercase; }
+    .request-message { border-top:1px solid var(--admin-border); color:var(--admin-muted); margin-top:.8rem; padding-top:.8rem; white-space:pre-wrap; }
+    .request-reply { background:var(--admin-bg); border-left:3px solid var(--admin-navy); color:var(--admin-muted); margin-top:.8rem; padding:.7rem .8rem; white-space:pre-wrap; }
+    .request-controls { align-items:center; display:flex; gap:.6rem; justify-content:space-between; margin-top:1rem; }
+    .status-select { background:var(--admin-card); border:1px solid var(--admin-border); border-radius:999px; color:var(--admin-text); font-size:.72rem; font-weight:700; padding:.45rem .7rem; }
+    .status-select.status-pending { border-color:#c5a052; color:#9a751d; }
+    .status-select.status-in-progress { border-color:#4b83c4; color:#28659f; }
+    .status-select.status-resolved { border-color:#24905a; color:#176b3a; }
+    .card-reply-form { display:flex; gap:.6rem; margin-top:.8rem; }
+    .card-reply-form input { background:var(--admin-bg); border:1px solid var(--admin-border); border-radius:.6rem; color:var(--admin-text); min-width:0; padding:.65rem .75rem; width:100%; }
+    .card-reply-form input::placeholder { color:var(--admin-muted); }
+    .card-reply-form button { border:0; cursor:pointer; }
+    .admin-composer { border-top:1px solid var(--admin-border); display:flex; gap:.7rem; padding:1rem 1.4rem; }
+    .admin-composer input { background:var(--admin-bg); border:1px solid var(--admin-border); border-radius:.6rem; color:var(--admin-text); min-width:0; padding:.85rem 1rem; width:100%; }
+    .admin-composer input::placeholder { color:var(--admin-muted); }
+    .admin-list { display:grid; gap:.6rem; list-style:none; margin:0; max-height:58vh; overflow:auto; padding:1rem; }
+    .admin-list button { background:transparent; border:1px solid transparent; border-radius:.6rem; color:var(--admin-text); display:block; padding:.9rem; text-align:left; width:100%; }
+    .admin-list button:hover,.admin-list button[aria-current="true"] { background:var(--admin-bg); border-color:var(--admin-border); }
+    .admin-list strong,.admin-list span,.admin-list small { display:block; }
+    .admin-list span { color:var(--admin-muted); margin-top:.2rem; }
+    .admin-list small { color:var(--admin-muted); font-size:.72rem; margin-top:.3rem; }
+    .admin-client { border-bottom:1px solid var(--admin-border); color:var(--admin-muted); padding:1rem 1.4rem; }
+    .admin-client strong { color:var(--admin-text); display:block; }
+    .admin-status { color:var(--admin-muted); font-size:.8rem; }
+    .admin-status.error { color:#d44b4b; }
+    .admin-status.ready { color:#24905a; }
+    .admin-empty { color:var(--admin-muted); padding:1.2rem; }
+    .admin-notice { background:#fff7d9; border:1px solid #d5b45d; border-radius:.7rem; color:#5d4512; margin-bottom:1rem; padding:1rem; }
+    .admin-auth { background:var(--admin-card); border:1px solid var(--admin-border); border-radius:1rem; margin:auto; max-width:32rem; padding:2rem; }
+    .admin-auth h2 { color:var(--admin-text); font-family:Manrope,sans-serif; font-size:1.6rem; margin:.4rem 0 1rem; }
+    .admin-auth form { display:grid; gap:1rem; }
+    .admin-auth label { color:var(--admin-text); display:grid; font-size:.75rem; font-weight:700; gap:.4rem; letter-spacing:.08em; text-transform:uppercase; }
+    .admin-auth input { background:var(--admin-bg); border:1px solid var(--admin-border); border-radius:.6rem; color:var(--admin-text); padding:.85rem 1rem; }
+    .admin-auth input:focus { border-color:var(--admin-accent); outline:2px solid color-mix(in srgb, var(--admin-accent) 25%, transparent); }
+    @media (max-width:800px) { .admin-layout { grid-template-columns:1fr; } .admin-timeline,.admin-list { max-height:unset; } }
+    @media (max-width:540px) { .admin-topbar,.admin-composer { align-items:stretch; flex-direction:column; } }
+  </style>
+</head>
+<body class="admin-page">
+  <main class="admin-shell">
+    <header class="admin-topbar">
+      <div>
+        <p class="admin-eyebrow">Deba Ventures Ltd / Secure operations</p>
+        <h1 class="admin-title">Admin workspace</h1>
+        <p class="admin-subtitle">Review client requests, manage subscribers, and reply in real time.</p>
+      </div>
+      <div class="admin-actions">
+        <span class="admin-status" id="admin-connection">Checking session…</span>
+        <button class="admin-button admin-button-muted" id="admin-theme" type="button">Dark mode</button>
+        <button class="admin-button admin-button-muted" id="admin-signout" type="button">Sign out</button>
+      </div>
+    </header>
+    <div class="admin-notice" id="admin-error" hidden role="alert"></div>
+    <section class="admin-auth" id="admin-auth" hidden aria-labelledby="admin-auth-title">
+      <p class="admin-eyebrow">Secure operations</p>
+      <h2 id="admin-auth-title">Sign in to admin workspace</h2>
+      <form id="admin-login-form">
+        <label for="admin-email">Email address<input id="admin-email" name="admin-email" type="email" autocomplete="username" required></label>
+        <label for="admin-password">Password<input id="admin-password" name="admin-password" type="password" autocomplete="current-password" required></label>
+        <button class="admin-button admin-button-primary" type="submit">Sign in</button>
+      </form>
+      <p class="admin-status" id="admin-auth-status" style="margin-top:1rem"></p>
+    </section>
+    <section class="admin-layout">
+      <section class="admin-panel" aria-labelledby="request-title">
+        <header class="admin-panel-header">
+          <div><p class="admin-eyebrow">Client request</p><h2 id="request-title">Select a request</h2></div>
+          <span class="admin-status" id="request-status"></span>
+        </header>
+        <div class="admin-client" id="request-client">Select a request to view client details.</div>
+        <div class="admin-timeline" id="request-timeline" aria-live="polite"><p class="admin-empty">Loading requests…</p></div>
+        <form class="admin-composer" id="reply-form">
+          <label class="sr-only" for="reply-input">Reply to client</label>
+          <input id="reply-input" maxlength="4000" placeholder="Write a reply to this client…" required>
+          <button class="admin-button admin-button-primary" id="reply-button" type="submit">Send</button>
+        </form>
+      </section>
+      <aside class="admin-panel" aria-labelledby="requests-title">
+        <header class="admin-panel-header"><div><p class="admin-eyebrow">Inbox</p><h2 id="requests-title">Recent requests</h2></div><span class="admin-status" id="request-count">0</span></header>
+        <ul class="admin-list" id="request-list"></ul>
+      </aside>
+    </section>
+    <section class="admin-panel" style="margin-top:1rem" aria-labelledby="subscribers-title">
+      <header class="admin-panel-header"><div><p class="admin-eyebrow">Audience</p><h2 id="subscribers-title">Newsletter subscribers</h2></div><span class="admin-status" id="subscriber-count">0</span></header>
+      <ul class="admin-list" id="subscriber-list"></ul>
+    </section>
+  </main>
+  <script type="module">
+    const config = window.DEBA_CONFIG;
+    const errorBox = document.querySelector("#admin-error");
+    const showError = (message) => { errorBox.textContent = message; errorBox.hidden = false; };
+    const authPanel = document.querySelector("#admin-auth");
+    const loginForm = document.querySelector("#admin-login-form");
+    const authStatus = document.querySelector("#admin-auth-status");
+    const supabaseUrl = config?.SUPABASE_URL || config?.supabaseUrl;
+    const supabaseAnonKey = config?.SUPABASE_ANON_KEY || config?.supabaseAnonKey;
+    if (!supabaseUrl || !supabaseAnonKey) { document.documentElement.hidden = false; showError("Supabase configuration is missing."); throw new Error("Missing Supabase configuration"); }
+    const { createClient } = await import("https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm");
+    const supabase = createClient(supabaseUrl, supabaseAnonKey);
+    const table = () => supabase.schema("public").from("client_requests");
+    const state = { requests: [], subscribers: [], selectedId: null };
+    const el = {
+      connection: document.querySelector("#admin-connection"), timeline: document.querySelector("#request-timeline"),
+      list: document.querySelector("#request-list"), count: document.querySelector("#request-count"),
+      subscriberList: document.querySelector("#subscriber-list"), subscriberCount: document.querySelector("#subscriber-count")
+    };
+    const escape = (value) => String(value ?? "").replace(/[&<>"']/g, (char) => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#039;" })[char]);
+    const formatDate = (value) => new Intl.DateTimeFormat([], { dateStyle:"medium", timeStyle:"short" }).format(new Date(value));
+    const statusValue = (value) => ({ pending:"Pending", in_progress:"In Progress", resolved:"Resolved" }[String(value || "").toLowerCase()] || "Pending");
+    const statusClass = (value) => statusValue(value).toLowerCase().replace(" ", "-");
+    const setConnection = (text, type = "") => { el.connection.textContent = text; el.connection.className = `admin-status ${type}`; };
+    const showLogin = (message = "") => {
+      document.documentElement.hidden = false;
+      document.querySelector(".admin-layout").hidden = true;
+      document.querySelector(".admin-panel[aria-labelledby='subscribers-title']").hidden = true;
+      authPanel.hidden = false;
+      document.querySelector("#admin-signout").hidden = true;
+      authStatus.textContent = message;
+      setConnection("Sign in required");
+    };
+    const showDashboard = () => {
+      authPanel.hidden = true;
+      document.querySelector(".admin-layout").hidden = false;
+      document.querySelector(".admin-panel[aria-labelledby='subscribers-title']").hidden = false;
+      document.querySelector("#admin-signout").hidden = false;
+    };
+    const renderSidebar = () => {
+      el.count.textContent = `${state.requests.length} total`;
+      el.list.innerHTML = state.requests.length ? state.requests.slice(0, 10).map((request) => `<li><button type="button" data-request="${escape(request.id)}" aria-current="${request.id === state.selectedId}"><strong>${escape(request.full_name)}</strong><span>${escape(request.supply_category)}</span><small>${escape(formatDate(request.created_at))}</small></button></li>`).join("") : '<li class="admin-empty">No client requests yet.</li>';
+    };
+    const renderTimeline = () => {
+      el.timeline.innerHTML = state.requests.length ? state.requests.map((request) => {
+        const status = statusValue(request.status);
+        return `<article class="request-card${request.id === state.selectedId ? " is-selected" : ""}" id="request-${escape(request.id)}" data-card="${escape(request.id)}">
+          <div class="request-card-header"><div><p class="admin-eyebrow">Client request</p><h3>${escape(request.subject)}</h3></div><select class="status-select status-${statusClass(request.status)}" data-status="${escape(request.id)}" aria-label="Update request status"><option${status === "Pending" ? " selected" : ""}>Pending</option><option${status === "In Progress" ? " selected" : ""}>In Progress</option><option${status === "Resolved" ? " selected" : ""}>Resolved</option></select></div>
+          <div class="request-fields"><div class="request-field"><strong>Full Name</strong>${escape(request.full_name)}</div><div class="request-field"><strong>Company Name</strong>${escape(request.company_name)}</div><div class="request-field"><strong>Email Address</strong>${escape(request.email_address)}</div><div class="request-field"><strong>Phone</strong>${escape(request.phone)}</div><div class="request-field"><strong>Supply Category</strong>${escape(request.supply_category)}</div><div class="request-field"><strong>Created</strong>${escape(formatDate(request.created_at))}</div></div>
+          <div class="request-message"><strong>Message</strong><br>${escape(request.message)}</div>${request.admin_reply ? `<div class="request-reply"><strong>Admin reply</strong><br>${escape(request.admin_reply)}</div>` : ""}
+          <form class="card-reply-form" data-reply-form="${escape(request.id)}"><input name="reply" maxlength="4000" placeholder="Write a reply to this client…" aria-label="Reply to ${escape(request.full_name)}" required><button class="admin-button admin-button-primary" type="submit">Send</button></form>
+        </article>`;
+      }).join("") : '<p class="admin-empty">No client requests yet.</p>';
+    };
+    const renderSubscribers = () => {
+      el.subscriberCount.textContent = `${state.subscribers.length} total`;
+      el.subscriberList.innerHTML = state.subscribers.length ? state.subscribers.map((subscriber) => `<li><div><strong>${escape(subscriber.email)}</strong><small>${escape(formatDate(subscriber.created_at))}</small></div></li>`).join("") : '<li class="admin-empty">No subscribers yet.</li>';
+    };
+    const loadRequests = async () => {
+      const { data, error } = await table().select("id, full_name, company_name, email_address, phone, subject, message, supply_category, status, admin_reply, created_at").order("created_at", { ascending:false }).limit(100);
+      if (error) throw error;
+      state.requests = data || [];
+      if (!state.selectedId && state.requests[0]) state.selectedId = state.requests[0].id;
+      renderSidebar(); renderTimeline();
+    };
+    const loadSubscribers = async () => {
+      const { data, error } = await supabase.schema("public").from("newsletter_subscribers").select("id, email, created_at").order("created_at", { ascending:false }).limit(100);
+      if (error) throw error; state.subscribers = data || []; renderSubscribers();
+    };
+    const updateRequest = async (id, values) => {
+      const { data, error } = await table().update(values).eq("id", id).select("id, full_name, company_name, email_address, phone, subject, message, supply_category, status, admin_reply, created_at").single();
+      if (error) throw error;
+      const index = state.requests.findIndex((request) => request.id === id);
+      if (index >= 0) state.requests[index] = data;
+      renderSidebar(); renderTimeline();
+    };
+    const start = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) { showLogin(); return; }
+      const { data: userData, error: userError } = await supabase.auth.getUser();
+      if (userError || !userData.user) { showLogin("Your session has expired. Please sign in again."); return; }
+      const { data: profile, error: profileError } = await supabase.schema("public").from("profiles").select("role").eq("id", userData.user.id).maybeSingle();
+      if (profileError || profile?.role !== "admin") { await supabase.auth.signOut(); showLogin("This account does not have admin access."); return; }
+      await Promise.all([loadRequests(), loadSubscribers()]);
+      document.documentElement.hidden = false; showDashboard(); setConnection("Live connection", "ready");
+      supabase.channel("admin-client-requests").on("postgres_changes", { event:"*", schema:"public", table:"client_requests" }, async (payload) => {
+        if (payload.eventType === "DELETE") state.requests = state.requests.filter((request) => request.id !== payload.old.id); else await loadRequests();
+        renderSidebar(); renderTimeline();
+      }).on("postgres_changes", { event:"*", schema:"public", table:"newsletter_subscribers" }, loadSubscribers).subscribe((status) => {
+        if (status === "SUBSCRIBED") setConnection("Live connection", "ready");
+        if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") setConnection("Realtime unavailable", "error");
+      });
+    };
+    el.list.addEventListener("click", (event) => {
+      const button = event.target.closest("[data-request]"); if (!button) return;
+      state.selectedId = button.dataset.request; renderSidebar(); renderTimeline();
+      document.querySelector(`#request-${CSS.escape(state.selectedId)}`)?.scrollIntoView({ behavior:"smooth", block:"center" });
+    });
+    el.timeline.addEventListener("change", async (event) => {
+      const select = event.target.closest("[data-status]"); if (!select) return;
+      try { await updateRequest(select.dataset.status, { status: select.value }); } catch (error) { showError(`Status update failed: ${error.message}`); }
+    });
+    el.timeline.addEventListener("submit", async (event) => {
+      const form = event.target.closest("[data-reply-form]"); if (!form) return;
+      event.preventDefault(); const button = form.querySelector("button"); const input = form.elements.reply;
+      button.disabled = true;
+      try { await updateRequest(form.dataset.replyForm, { admin_reply: input.value.trim() }); } catch (error) { showError(`Reply failed: ${error.message}`); } finally { button.disabled = false; }
+    });
+    loginForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const button = loginForm.querySelector("button");
+      button.disabled = true; authStatus.textContent = "Signing in...";
+      const { error } = await supabase.auth.signInWithPassword({ email: loginForm.elements["admin-email"].value.trim(), password: loginForm.elements["admin-password"].value });
+      button.disabled = false;
+      if (error) { authStatus.textContent = error.message || "Sign-in failed."; return; }
+      loginForm.reset(); authStatus.textContent = ""; await start();
+    });
+    document.querySelector("#admin-signout").addEventListener("click", async () => { await supabase.auth.signOut(); showLogin("You have been signed out."); });
+    const themeButton = document.querySelector("#admin-theme");
+    themeButton.addEventListener("click", () => { const dark = document.body.dataset.theme === "dark"; document.body.dataset.theme = dark ? "light" : "dark"; themeButton.textContent = dark ? "Dark mode" : "Light mode"; });
+    if (matchMedia("(prefers-color-scheme: dark)").matches) themeButton.click();
+    try { await start(); } catch (error) { console.error(error); showError(`Unable to load admin data: ${error.message}`); document.documentElement.hidden = false; setConnection("Connection error", "error"); }
+  </script>
+</body>
+</html>
