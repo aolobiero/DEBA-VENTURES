@@ -18,7 +18,11 @@
     body[data-theme="dark"] { --admin-bg: #081426; --admin-card: #10233d; --admin-text: #f3f7fc; --admin-muted: #c6d3e2; --admin-border: #315070; --admin-accent: #e0bd70; --admin-navy: #f3f7fc; }
     body.admin-page { background:var(--admin-bg); color:var(--admin-text); min-height:100vh; }
     .admin-page [hidden] { display:none !important; }
-    .admin-shell { margin:auto; max-width:1440px; padding:2rem clamp(1rem,4vw,4rem) 4rem; }
+    .admin-shell { margin-left:12rem; max-width:1440px; padding:2rem clamp(1rem,4vw,4rem) 4rem; }
+    .admin-nav { background:var(--admin-card); border:1px solid var(--admin-border); border-radius:1rem; display:grid; gap:.4rem; left:1rem; padding:.55rem; position:fixed; top:2rem; width:10rem; z-index:5; }
+    .admin-nav button { background:transparent; border:1px solid transparent; border-radius:.6rem; color:var(--admin-muted); cursor:pointer; padding:.7rem 1rem; }
+    .admin-nav button:hover,.admin-nav button[aria-current="page"] { background:var(--admin-bg); border-color:var(--admin-border); color:var(--admin-text); }
+    .admin-nav-icon { color:var(--admin-accent); display:inline-block; font-size:.9rem; margin-right:.35rem; }
     .admin-topbar,.admin-toolbar,.admin-panel-header,.admin-item-header { align-items:center; display:flex; gap:1rem; justify-content:space-between; }
     .admin-topbar { margin-bottom:2rem; }
     .admin-title { color:var(--admin-text); font-family:Manrope,sans-serif; font-size:clamp(2rem,4vw,3.8rem); letter-spacing:-.06em; line-height:1; }
@@ -66,6 +70,14 @@
     .admin-list strong,.admin-list span,.admin-list small { display:block; }
     .admin-list span { color:var(--admin-muted); margin-top:.2rem; }
     .admin-list small { color:var(--admin-muted); font-size:.72rem; margin-top:.3rem; }
+    .inbox-tools { border-bottom:1px solid var(--admin-border); display:grid; gap:.6rem; padding:1rem; }
+    .inbox-search { background:var(--admin-bg); border:1px solid var(--admin-border); border-radius:.6rem; color:var(--admin-text); padding:.7rem .8rem; width:100%; }
+    .inbox-search::placeholder { color:var(--admin-muted); }
+    .filter-row { display:flex; flex-wrap:wrap; gap:.35rem; }
+    .filter-button { background:transparent; border:1px solid var(--admin-border); border-radius:999px; color:var(--admin-muted); cursor:pointer; font-size:.7rem; padding:.4rem .65rem; }
+    .filter-button[aria-pressed="true"],.filter-button:hover { background:var(--admin-accent); border-color:var(--admin-accent); color:#071d3c; }
+    .inbox-filter { background:var(--admin-bg); border:1px solid var(--admin-border); border-radius:.6rem; color:var(--admin-text); font-size:.78rem; padding:.65rem .75rem; width:100%; }
+    .load-more { border:1px solid var(--admin-border); border-radius:.6rem; color:var(--admin-text); cursor:pointer; margin:0 1rem 1rem; padding:.65rem; width:calc(100% - 2rem); }
     .admin-client { border-bottom:1px solid var(--admin-border); color:var(--admin-muted); padding:1rem 1.4rem; }
     .admin-client strong { color:var(--admin-text); display:block; }
     .admin-status { color:var(--admin-muted); font-size:.8rem; }
@@ -79,12 +91,26 @@
     .admin-auth label { color:var(--admin-text); display:grid; font-size:.75rem; font-weight:700; gap:.4rem; letter-spacing:.08em; text-transform:uppercase; }
     .admin-auth input { background:var(--admin-bg); border:1px solid var(--admin-border); border-radius:.6rem; color:var(--admin-text); padding:.85rem 1rem; }
     .admin-auth input:focus { border-color:var(--admin-accent); outline:2px solid color-mix(in srgb, var(--admin-accent) 25%, transparent); }
-    @media (max-width:800px) { .admin-layout { grid-template-columns:1fr; } .admin-timeline,.admin-list { max-height:unset; } }
+    .admin-view { margin-top:1rem; }
+    .admin-stat-grid { display:grid; gap:1rem; grid-template-columns:repeat(auto-fit,minmax(12rem,1fr)); padding:1.2rem; }
+    .admin-stat-card { background:var(--admin-bg); border:1px solid var(--admin-border); border-radius:.8rem; padding:1.1rem; }
+    .admin-stat-card span { color:var(--admin-muted); display:block; font-size:.7rem; letter-spacing:.1em; text-transform:uppercase; }
+    .admin-stat-card strong { color:var(--admin-text); display:block; font-family:Manrope,sans-serif; font-size:2rem; margin-top:.4rem; }
+    .admin-settings { display:grid; gap:1rem; padding:1.2rem; }
+    .admin-setting-row { align-items:center; border-bottom:1px solid var(--admin-border); display:flex; gap:1rem; justify-content:space-between; padding-bottom:1rem; }
+    .admin-setting-row:last-child { border-bottom:0; }
+    .admin-setting-row strong { color:var(--admin-text); display:block; }
+    .admin-setting-row span { color:var(--admin-muted); font-size:.8rem; }
+    @media (max-width:800px) { .admin-shell { margin-left:0; } .admin-layout { grid-template-columns:1fr; } .admin-timeline,.admin-list { max-height:unset; } .admin-nav { display:flex; left:1rem; overflow:auto; position:static; width:auto; } .admin-nav button { white-space:nowrap; } }
     @media (max-width:540px) { .admin-topbar,.admin-composer { align-items:stretch; flex-direction:column; } }
   </style>
 </head>
 <body class="admin-page">
   <main class="admin-shell">
+    <nav class="admin-nav" aria-label="Admin sections">
+      <button type="button" aria-current="page" data-section="requests"><span class="admin-nav-icon">◈</span>Client Requests</button>
+      <button type="button" data-section="subscribers"><span class="admin-nav-icon">✉</span>Newsletter Subscribers</button>
+    </nav>
     <header class="admin-topbar">
       <div>
         <p class="admin-eyebrow">Deba Ventures Ltd / Secure operations</p>
@@ -124,12 +150,35 @@
       </section>
       <aside class="admin-panel" aria-labelledby="requests-title">
         <header class="admin-panel-header"><div><p class="admin-eyebrow">Inbox</p><h2 id="requests-title">Recent requests</h2></div><span class="admin-status" id="request-count">0</span></header>
+        <div class="inbox-tools">
+          <label class="sr-only" for="request-search">Search requests</label>
+          <input class="inbox-search" id="request-search" type="search" placeholder="Search name, company, subject…">
+          <label class="sr-only" for="request-status-filter">Filter requests by status</label>
+          <select class="inbox-filter" id="request-status-filter">
+            <option value="all">All statuses</option>
+            <option value="pending">Pending</option>
+            <option value="resolved">Resolved</option>
+          </select>
+        </div>
         <ul class="admin-list" id="request-list"></ul>
+        <button class="load-more" id="load-more" type="button" hidden>Load more</button>
       </aside>
     </section>
     <section class="admin-panel" style="margin-top:1rem" aria-labelledby="subscribers-title">
       <header class="admin-panel-header"><div><p class="admin-eyebrow">Audience</p><h2 id="subscribers-title">Newsletter subscribers</h2></div><span class="admin-status" id="subscriber-count">0</span></header>
       <ul class="admin-list" id="subscriber-list"></ul>
+    </section>
+    <section class="admin-panel admin-view" id="analytics-view" hidden aria-labelledby="analytics-title">
+      <header class="admin-panel-header"><div><p class="admin-eyebrow">Performance</p><h2 id="analytics-title">Request analytics</h2></div><span class="admin-status">Live from client requests</span></header>
+      <div class="admin-stat-grid" id="analytics-stats"></div>
+    </section>
+    <section class="admin-panel admin-view" id="settings-view" hidden aria-labelledby="settings-title">
+      <header class="admin-panel-header"><div><p class="admin-eyebrow">Workspace</p><h2 id="settings-title">Settings</h2></div></header>
+      <div class="admin-settings">
+        <div class="admin-setting-row"><div><strong>Appearance</strong><span>Switch the dashboard color mode.</span></div><button class="admin-button admin-button-muted" id="settings-theme" type="button">Toggle theme</button></div>
+        <div class="admin-setting-row"><div><strong>Data refresh</strong><span>Reload requests and subscribers from Supabase.</span></div><button class="admin-button admin-button-muted" id="settings-refresh" type="button">Refresh data</button></div>
+        <div class="admin-setting-row"><div><strong>Session</strong><span>End the current admin session.</span></div><button class="admin-button admin-button-primary" id="settings-signout" type="button">Sign out</button></div>
+      </div>
     </section>
   </main>
   <script type="module">
@@ -145,21 +194,25 @@
     const { createClient } = await import("https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm");
     const supabase = createClient(supabaseUrl, supabaseAnonKey);
     const table = () => supabase.schema("public").from("client_requests");
-    const state = { requests: [], subscribers: [], selectedId: null };
+    const state = { requests: [], subscribers: [], selectedId: null, search: "", filter: "all", pageSize: 10, visibleCount: 10 };
     const el = {
       connection: document.querySelector("#admin-connection"), timeline: document.querySelector("#request-timeline"),
       list: document.querySelector("#request-list"), count: document.querySelector("#request-count"),
-      subscriberList: document.querySelector("#subscriber-list"), subscriberCount: document.querySelector("#subscriber-count")
+      subscriberList: document.querySelector("#subscriber-list"), subscriberCount: document.querySelector("#subscriber-count"),
+      search: document.querySelector("#request-search"), statusFilter: document.querySelector("#request-status-filter"), loadMore: document.querySelector("#load-more")
     };
     const escape = (value) => String(value ?? "").replace(/[&<>"']/g, (char) => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#039;" })[char]);
     const formatDate = (value) => new Intl.DateTimeFormat([], { dateStyle:"medium", timeStyle:"short" }).format(new Date(value));
-    const statusValue = (value) => ({ pending:"Pending", in_progress:"In Progress", resolved:"Resolved" }[String(value || "").toLowerCase()] || "Pending");
+    const statusValue = (value) => ({ pending:"Pending", in_progress:"In Progress", "in progress":"In Progress", resolved:"Resolved" }[String(value || "").toLowerCase()] || "Pending");
     const statusClass = (value) => statusValue(value).toLowerCase().replace(" ", "-");
     const setConnection = (text, type = "") => { el.connection.textContent = text; el.connection.className = `admin-status ${type}`; };
     const showLogin = (message = "") => {
       document.documentElement.hidden = false;
       document.querySelector(".admin-layout").hidden = true;
       document.querySelector(".admin-panel[aria-labelledby='subscribers-title']").hidden = true;
+      document.querySelector("#analytics-view").hidden = true;
+      document.querySelector("#settings-view").hidden = true;
+      document.querySelector(".admin-nav").hidden = true;
       authPanel.hidden = false;
       document.querySelector("#admin-signout").hidden = true;
       authStatus.textContent = message;
@@ -169,14 +222,25 @@
       authPanel.hidden = true;
       document.querySelector(".admin-layout").hidden = false;
       document.querySelector(".admin-panel[aria-labelledby='subscribers-title']").hidden = false;
+      document.querySelector(".admin-nav").hidden = false;
       document.querySelector("#admin-signout").hidden = false;
     };
     const renderSidebar = () => {
-      el.count.textContent = `${state.requests.length} total`;
-      el.list.innerHTML = state.requests.length ? state.requests.slice(0, 10).map((request) => `<li><button type="button" data-request="${escape(request.id)}" aria-current="${request.id === state.selectedId}"><strong>${escape(request.full_name)}</strong><span>${escape(request.supply_category)}</span><small>${escape(formatDate(request.created_at))}</small></button></li>`).join("") : '<li class="admin-empty">No client requests yet.</li>';
+      const requests = filteredRequests();
+      const visible = requests.slice(0, state.visibleCount);
+      el.count.textContent = `${requests.length} shown`;
+      el.list.innerHTML = visible.length ? visible.map((request) => `<li><button type="button" data-request="${escape(request.id)}" aria-current="${request.id === state.selectedId}"><strong>${escape(request.full_name)}</strong><span>${escape(request.supply_category)}</span><small>${escape(formatDate(request.created_at))}</small></button></li>`).join("") : '<li class="admin-empty">No matching requests.</li>';
+      el.loadMore.hidden = visible.length >= requests.length;
     };
+    const filteredRequests = () => state.requests.filter((request) => {
+      const searchable = `${request.full_name} ${request.company_name} ${request.subject} ${request.email_address} ${request.supply_category}`.toLowerCase();
+      const matchesSearch = !state.search || searchable.includes(state.search);
+      const matchesFilter = state.filter === "all" || String(request.status || "pending").toLowerCase() === state.filter;
+      return matchesSearch && matchesFilter;
+    });
     const renderTimeline = () => {
-      el.timeline.innerHTML = state.requests.length ? state.requests.map((request) => {
+      const requests = filteredRequests();
+      el.timeline.innerHTML = requests.length ? requests.map((request) => {
         const status = statusValue(request.status);
         return `<article class="request-card${request.id === state.selectedId ? " is-selected" : ""}" id="request-${escape(request.id)}" data-card="${escape(request.id)}">
           <div class="request-card-header"><div><p class="admin-eyebrow">Client request</p><h3>${escape(request.subject)}</h3></div><select class="status-select status-${statusClass(request.status)}" data-status="${escape(request.id)}" aria-label="Update request status"><option${status === "Pending" ? " selected" : ""}>Pending</option><option${status === "In Progress" ? " selected" : ""}>In Progress</option><option${status === "Resolved" ? " selected" : ""}>Resolved</option></select></div>
@@ -190,23 +254,33 @@
       el.subscriberCount.textContent = `${state.subscribers.length} total`;
       el.subscriberList.innerHTML = state.subscribers.length ? state.subscribers.map((subscriber) => `<li><div><strong>${escape(subscriber.email)}</strong><small>${escape(formatDate(subscriber.created_at))}</small></div></li>`).join("") : '<li class="admin-empty">No subscribers yet.</li>';
     };
+    const renderAnalytics = () => {
+      const total = state.requests.length;
+      const pending = state.requests.filter((request) => statusValue(request.status) === "Pending").length;
+      const inProgress = state.requests.filter((request) => statusValue(request.status) === "In Progress").length;
+      const resolved = state.requests.filter((request) => statusValue(request.status) === "Resolved").length;
+      document.querySelector("#analytics-stats").innerHTML = [
+        ["Total requests", total], ["Pending", pending], ["In progress", inProgress],
+        ["Resolved", resolved], ["Subscribers", state.subscribers.length]
+      ].map(([label, value]) => `<div class="admin-stat-card"><span>${label}</span><strong>${value}</strong></div>`).join("");
+    };
     const loadRequests = async () => {
       const { data, error } = await table().select("id, full_name, company_name, email_address, phone, subject, message, supply_category, status, admin_reply, created_at").order("created_at", { ascending:false }).limit(100);
       if (error) throw error;
       state.requests = data || [];
       if (!state.selectedId && state.requests[0]) state.selectedId = state.requests[0].id;
-      renderSidebar(); renderTimeline();
+      renderSidebar(); renderTimeline(); renderAnalytics();
     };
     const loadSubscribers = async () => {
       const { data, error } = await supabase.schema("public").from("newsletter_subscribers").select("id, email, created_at").order("created_at", { ascending:false }).limit(100);
-      if (error) throw error; state.subscribers = data || []; renderSubscribers();
+      if (error) throw error; state.subscribers = data || []; renderSubscribers(); renderAnalytics();
     };
     const updateRequest = async (id, values) => {
       const { data, error } = await table().update(values).eq("id", id).select("id, full_name, company_name, email_address, phone, subject, message, supply_category, status, admin_reply, created_at").single();
       if (error) throw error;
       const index = state.requests.findIndex((request) => request.id === id);
       if (index >= 0) state.requests[index] = data;
-      renderSidebar(); renderTimeline();
+      renderSidebar(); renderTimeline(); renderAnalytics();
     };
     const start = async () => {
       const { data: { session } } = await supabase.auth.getSession();
@@ -214,7 +288,8 @@
       const { data: userData, error: userError } = await supabase.auth.getUser();
       if (userError || !userData.user) { showLogin("Your session has expired. Please sign in again."); return; }
       const { data: profile, error: profileError } = await supabase.schema("public").from("profiles").select("role").eq("id", userData.user.id).maybeSingle();
-      if (profileError || profile?.role !== "admin") { await supabase.auth.signOut(); showLogin("This account does not have admin access."); return; }
+      if (profileError) { await supabase.auth.signOut(); showLogin(`Admin profile lookup failed: ${profileError.message}`); return; }
+      if (profile?.role !== "admin") { await supabase.auth.signOut(); showLogin("This email is valid, but its profile role is not admin."); return; }
       await Promise.all([loadRequests(), loadSubscribers()]);
       document.documentElement.hidden = false; showDashboard(); setConnection("Live connection", "ready");
       supabase.channel("admin-client-requests").on("postgres_changes", { event:"*", schema:"public", table:"client_requests" }, async (payload) => {
@@ -229,6 +304,22 @@
       const button = event.target.closest("[data-request]"); if (!button) return;
       state.selectedId = button.dataset.request; renderSidebar(); renderTimeline();
       document.querySelector(`#request-${CSS.escape(state.selectedId)}`)?.scrollIntoView({ behavior:"smooth", block:"center" });
+    });
+    el.search.addEventListener("input", () => { state.search = el.search.value.trim().toLowerCase(); state.visibleCount = state.pageSize; renderSidebar(); renderTimeline(); });
+    el.statusFilter.addEventListener("change", () => {
+      state.filter = el.statusFilter.value; state.visibleCount = state.pageSize;
+      renderSidebar(); renderTimeline();
+    });
+    el.loadMore.addEventListener("click", () => { state.visibleCount += state.pageSize; renderSidebar(); });
+    document.querySelector(".admin-nav").addEventListener("click", (event) => {
+      const button = event.target.closest("[data-section]"); if (!button) return;
+      document.querySelectorAll(".admin-nav [data-section]").forEach((item) => item.setAttribute("aria-current", String(item === button ? "page" : "false")));
+      const views = { requests:".admin-layout", subscribers:".admin-panel[aria-labelledby='subscribers-title']", analytics:"#analytics-view", settings:"#settings-view" };
+      document.querySelector(".admin-layout").hidden = button.dataset.section !== "requests";
+      document.querySelector(".admin-panel[aria-labelledby='subscribers-title']").hidden = button.dataset.section !== "subscribers";
+      document.querySelector("#analytics-view").hidden = button.dataset.section !== "analytics";
+      document.querySelector("#settings-view").hidden = button.dataset.section !== "settings";
+      document.querySelector(views[button.dataset.section]).scrollIntoView({ behavior:"smooth", block:"start" });
     });
     el.timeline.addEventListener("change", async (event) => {
       const select = event.target.closest("[data-status]"); if (!select) return;
@@ -251,7 +342,14 @@
     });
     document.querySelector("#admin-signout").addEventListener("click", async () => { await supabase.auth.signOut(); showLogin("You have been signed out."); });
     const themeButton = document.querySelector("#admin-theme");
-    themeButton.addEventListener("click", () => { const dark = document.body.dataset.theme === "dark"; document.body.dataset.theme = dark ? "light" : "dark"; themeButton.textContent = dark ? "Dark mode" : "Light mode"; });
+    const toggleTheme = () => { const dark = document.body.dataset.theme === "dark"; document.body.dataset.theme = dark ? "light" : "dark"; themeButton.textContent = dark ? "Dark mode" : "Light mode"; };
+    themeButton.addEventListener("click", toggleTheme);
+    document.querySelector("#settings-theme").addEventListener("click", toggleTheme);
+    document.querySelector("#settings-refresh").addEventListener("click", async (event) => {
+      event.target.disabled = true;
+      try { await Promise.all([loadRequests(), loadSubscribers()]); } catch (error) { showError(`Refresh failed: ${error.message}`); } finally { event.target.disabled = false; }
+    });
+    document.querySelector("#settings-signout").addEventListener("click", async () => { await supabase.auth.signOut(); showLogin("You have been signed out."); });
     if (matchMedia("(prefers-color-scheme: dark)").matches) themeButton.click();
     try { await start(); } catch (error) { console.error(error); showError(`Unable to load admin data: ${error.message}`); document.documentElement.hidden = false; setConnection("Connection error", "error"); }
   </script>
